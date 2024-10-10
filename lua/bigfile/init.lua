@@ -3,8 +3,8 @@ local M = {}
 local features = require "bigfile.features"
 
 ---@class config
----@field filesize integer size in MiB
----@field pattern string|string[]|fun(bufnr: number, filesize_mib: number): boolean an |autocmd-pattern| or callback to override detection of big files
+---@field filesize integer size in KB
+---@field pattern string|string[]|fun(bufnr: number, filesize_kb: number): boolean an |autocmd-pattern| or callback to override detection of big files
 ---@field features string[] array of features
 local default_config = {
   filesize = 2,
@@ -22,7 +22,7 @@ local default_config = {
 }
 
 ---@param bufnr number
----@return integer|nil size in MiB if buffer is valid, nil otherwise
+---@return integer|nil size in Kb if buffer is valid, nil otherwise
 local function get_buf_size(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   local ok, stats = pcall(function()
@@ -31,7 +31,7 @@ local function get_buf_size(bufnr)
   if not (ok and stats) then
     return
   end
-  return math.floor(0.5 + (stats.size / (1024 * 1024)))
+  return math.floor(0.5 + (stats.size / 1024))
 end
 
 ---@param bufnr number
@@ -95,7 +95,7 @@ function M.setup(overrides)
       pre_bufread_callback(args.buf, config)
     end,
     desc = string.format(
-      "[bigfile.nvim] Performance rule for handling files over %sMiB",
+      "[bigfile.nvim] Performance rule for handling files over %sKb",
       config.filesize
     ),
   })
